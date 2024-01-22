@@ -87,6 +87,7 @@ public:
 	void setIntegrator(int integrator) {
 		m_iIntegrator = integrator;
 	}
+	std::vector<MassPoint> mass_points;
 
 private:
 	// Data Attributes
@@ -104,7 +105,6 @@ private:
 	Point2D m_trackmouse;
 	Point2D m_oldtrackmouse;
 
-	std::vector<MassPoint> mass_points;
 	std::vector<Spring> springs;
 
 	uint16_t numHorizontalPoints = 10;
@@ -113,7 +113,7 @@ private:
 	float gravity = 0;
 
 	std::vector<int> movablePoints;
-
+	void initSystem();
 	void calculateForcesForPoints(std::vector<MassPoint>& points);
 
 	void stepEuler(float time_step);

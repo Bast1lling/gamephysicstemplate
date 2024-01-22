@@ -113,7 +113,9 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 	}
 
 	handleCollisionAmongBodies();
+	handleCollisionWithMSS();
 }
+
 
 void RigidBodySystemSimulator::handleCollisionAmongBodies()
 {
@@ -158,6 +160,24 @@ void RigidBodySystemSimulator::handleCollisionAmongBodies()
 			continue;
 
 		body_a.linear_velocity = -body_a.linear_velocity;
+	}
+}
+
+void RigidBodySystemSimulator::handleCollisionWithMSS()
+{
+	MassSpringSystemSimulator mss = this->m_massSpringSystem;
+	for (int i = 0;i < bodies.size();i++)
+	{
+		RigidBody& body_a = bodies[i];
+		for(int j = 0; j < mss.mass_points.size(); j++)
+		{
+			CollisionInfo info = checkCollisionSAT(body_a.getBodyToWorld(), mss.getMassPointToWorld(j));
+
+			if (!info.isValid) // Bodies are not colliding: do nothing
+				continue;
+			
+			printf("Collision between body %d and mass point %d\n", i, j);
+		}
 	}
 }
 

@@ -31,13 +31,14 @@ public:
 	Vec3 getPositionOfRigidBody(int i);
 	Vec3 getLinearVelocityOfRigidBody(int i);
 	Vec3 getAngularVelocityOfRigidBody(int i);
-	void handleCollisionAmongBodies();
 	void applyForceOnBody(int i, Vec3 loc, Vec3 force);
 	void addRigidBody(Vec3 position, Vec3 size, int mass);
 	void setOrientationOf(int i,Quat orientation);
 	void setVelocityOf(int i, Vec3 velocity);
 
 private:
+	void handleCollisionAmongBodies();
+	void handleCollisionWithMSS();
 	// Attributes
 	// add your RigidBodySystem data members, for e.g.,
 	// RigidBodySystem * m_pRigidBodySystem; 

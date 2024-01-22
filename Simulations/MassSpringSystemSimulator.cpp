@@ -88,8 +88,22 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 {
 	this->reset();
 
-	m_iTestCase = testCase;
+	m_iTestCase = testCase;		
+	int p0 = this->addMassPoint(Vec3(0.5f, 0.5f, 0), Vec3(-1, 0, 0), false);
+	int p1 = this->addMassPoint(Vec3(0.5f, 2.5f, 0), Vec3(1, 0, 0), false);
+	this->addSpring(p0, p1, 1);
+	this->m_iIntegrator = midpoint;
+	this->timestep_override = 0.005;
+	//this->m_fDamping = 1;
+	this->m_fStiffness = 40;
+	this->m_fMass = 10;
+	//initSystem();
+	
+	this->setSize(0.1);
+}
 
+void MassSpringSystemSimulator::initSystem()
+{
 	this->m_fDamping = 1;
 	this->m_fStiffness = 500;
 	this->m_fMass = 1;
@@ -136,18 +150,18 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 
 		}
 	}
-	this->setSize(0.1);
 }
 
 void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
 {
+
 }
 
 
 
 void MassSpringSystemSimulator::simulateTimestep(float time_step)
 {
-	time_step *= 0.01f;
+	time_step *= 0.1f;
 	if (this->m_iTestCase == 1 || this->m_iTestCase == 2)
 	{
 		time_step = this->timestep_override;
