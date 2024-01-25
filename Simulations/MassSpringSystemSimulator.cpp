@@ -88,7 +88,8 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 {
 	this->reset();
 
-	m_iTestCase = testCase;		
+	m_iTestCase = testCase;	
+	/*
 	int p0 = this->addMassPoint(Vec3(0.5f, 0.5f, 0), Vec3(-1, 0, 0), false);
 	int p1 = this->addMassPoint(Vec3(0.5f, 2.5f, 0), Vec3(1, 0, 0), false);
 	this->addSpring(p0, p1, 1);
@@ -96,8 +97,8 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 	this->timestep_override = 0.005;
 	//this->m_fDamping = 1;
 	this->m_fStiffness = 40;
-	this->m_fMass = 10;
-	//initSystem();
+	this->m_fMass = 10;*/
+	initSystem();
 	
 	this->setSize(0.1);
 }
@@ -261,6 +262,11 @@ Vec3 MassSpringSystemSimulator::getPositionOfMassPoint(int index)
 Vec3 MassSpringSystemSimulator::getVelocityOfMassPoint(int index)
 {
 	return this->mass_points.at(index).velocity;
+}
+
+void MassSpringSystemSimulator::setVelocityOfMassPoint(int index, Vec3 v)
+{
+	this->mass_points.at(index).velocity = v;
 }
 
 Mat4 MassSpringSystemSimulator::getMassPointToWorld(int index)

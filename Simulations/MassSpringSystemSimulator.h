@@ -80,6 +80,7 @@ public:
 	int getNumberOfSprings();
 	Vec3 getPositionOfMassPoint(int index);
 	Vec3 getVelocityOfMassPoint(int index);
+	void setVelocityOfMassPoint(int index, Vec3 v);
 	Mat4 getMassPointToWorld(int index);
 	void applyExternalForce(Vec3 force);
 
@@ -88,10 +89,10 @@ public:
 		m_iIntegrator = integrator;
 	}
 	std::vector<MassPoint> mass_points;
+	float m_fMass;
 
 private:
 	// Data Attributes
-	float m_fMass;
 	float m_sphereSize;
 	Mat4 m_sphereScale;
 	float m_fStiffness;

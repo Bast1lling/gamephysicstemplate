@@ -38,7 +38,7 @@ public:
 
 private:
 	void handleCollisionAmongBodies();
-	void handleCollisionWithMSS();
+	void handleCollisionWithMSS(RigidBody& body_a);
 	// Attributes
 	// add your RigidBodySystem data members, for e.g.,
 	// RigidBodySystem * m_pRigidBodySystem; 
