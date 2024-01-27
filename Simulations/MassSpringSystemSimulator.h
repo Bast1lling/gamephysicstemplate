@@ -109,7 +109,7 @@ private:
 	std::vector<Spring> springs;
 
 	uint16_t numHorizontalPoints = 10;
-	uint16_t numVerticalPoints = 20;
+	uint16_t numVerticalPoints = 10;
 
 	float gravity = 0;
 

@@ -107,7 +107,7 @@ void MassSpringSystemSimulator::initSystem()
 {
 	this->m_fDamping = 1;
 	this->m_fStiffness = 500;
-	this->m_fMass = 1;
+	this->m_fMass = 10;
 	this->gravity = -9.81;
 	const Vec3 start = Vec3(-0.5, 1.5, 0);
 
@@ -163,10 +163,10 @@ void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
 void MassSpringSystemSimulator::simulateTimestep(float time_step)
 {
 	time_step *= 0.1f;
-	if (this->m_iTestCase == 1 || this->m_iTestCase == 2)
-	{
-		time_step = this->timestep_override;
-	}
+	//if (this->m_iTestCase == 1 || this->m_iTestCase == 2)
+	//{
+	//	time_step = this->timestep_override;
+	//}
 
 	this->stepRK4(time_step);
 }
@@ -274,7 +274,7 @@ Mat4 MassSpringSystemSimulator::getMassPointToWorld(int index)
 	Mat4 translation_matrix;
 	Mat4 scale_matrix;
 	Vec3 position = this->mass_points.at(index).position;
-	Vec3 size = this->mass_points.size() > 10 ? Vec3(0.01) : Vec3(0.1);
+	Vec3 size = this->mass_points.size() > 10 ? Vec3(0.1) : Vec3(0.1);
 	translation_matrix.initTranslation(position.x, position.y, position.z);
 
 	return this->m_sphereScale * translation_matrix;

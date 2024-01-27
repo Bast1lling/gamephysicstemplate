@@ -48,35 +48,21 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 	{
 	case 0:
 	{
-		addRigidBody(Vec3(0, 0, 0), Vec3(1, 0.6, 0.5), 2);
-		setOrientationOf(0, Quat(Vec3(0, 0, 1), M_PI_2));
-		applyForceOnBody(0, Vec3(0.3, 0.5, 0.25), Vec3(1, 1, 0));
+		//construct goal
+		//addRigidBody(Vec3(1, 0, -0.5), Vec3(0.1, 1, 0.1), 2);
+		//addRigidBody(Vec3(1, 0, 0.5), Vec3(0.1, 1, 0.1), 2);
+		//applyForceOnBody(0, Vec3(0.3, 0.5, 0.25), Vec3(1, 1, 0));
+
+		//construct ball
+		addRigidBody(Vec3(0, 0, 0), Vec3(0.3, 0.3, 0.3), 2);
 		break;
 	}
 	case 1:
-	{
-		Vec3 size(0.5, 0.5, 0.5);
-		double mass = 1;
-		//middle top
-		addRigidBody(Vec3(0, 2, 0), size, mass);
-		//left
-		addRigidBody(Vec3(-1, 1, -1), size, mass);
-		addRigidBody(Vec3(-1, 1, 1), size, mass);
-		//right
-		addRigidBody(Vec3(1, 1, -1), size, mass);
-		addRigidBody(Vec3(1, 1, 1), size, mass);
-		Vec3 pushRightBack(0.5, 0, -0.5);
-		Vec3 pushLeftBack(-0.5, 0, -0.5);
-		Vec3 pushRightFront(0.5, 0, 0.5);
-		Vec3 pushLeftFront(-0.5, 0, 0.5);
-		Vec3 pushDown(0, -0.5, 0);
-		double factor = 20;
-		applyForceOnBody(0, this->bodies[0].center_of_mass - pushDown, pushDown * factor);
-		applyForceOnBody(1, this->bodies[1].center_of_mass - pushRightFront, pushRightFront * factor);
-		applyForceOnBody(2, this->bodies[2].center_of_mass - pushRightBack, pushRightBack * factor);
-		applyForceOnBody(3, this->bodies[3].center_of_mass - pushLeftFront, pushLeftFront * factor);
-		applyForceOnBody(4, this->bodies[4].center_of_mass - pushLeftBack, pushLeftBack * factor);
-		break;
+	{		
+		//construct goal
+		addRigidBody(Vec3(0, 0, 0), Vec3(1, 0.6, 0.3), 2);
+		setOrientationOf(0, Quat(Vec3(0, 0, 1), M_PI_2));
+		applyForceOnBody(0, Vec3(0.3, 0.5, 0.25), Vec3(1, 1, 0));
 	}
 	}
 }
@@ -169,6 +155,7 @@ void RigidBodySystemSimulator::handleCollisionWithMSS(RigidBody& body_a)
 	for (int j = 0; j < mss.mass_points.size(); j++)
 	{
 		Mat4 mp_to_world = mss.getMassPointToWorld(j);
+
 		CollisionInfo info = checkCollisionSAT(body_a.getBodyToWorld(), mss.getMassPointToWorld(j));
 
 		if (!info.isValid) // Bodies are not colliding: do nothing
@@ -193,14 +180,16 @@ void RigidBodySystemSimulator::handleCollisionWithMSS(RigidBody& body_a)
 		//mockup calcImpulse for mass points	
 		Vec3 body_location = mp_to_world.transformVector(info.collisionPointWorld);
 		Vec3 bodyBImpulse = cross(cross(body_location, info.normalWorld), body_location);
-		float mass = mss.m_fMass / mss.mass_points.size();
+		float mass = mss.m_fMass;
 		float impulse = -v_rel_dot_n / (1 / body_a.mass + 1 / mass + dot(bodyAImpulse + bodyBImpulse, info.normalWorld));
+		
+		//normalize impulse somehow
+		impulse /= mss.mass_points.size();
 
 		body_a.linear_velocity = body_a.linear_velocity + (info.normalWorld * impulse) / body_a.mass;
 		mss.setVelocityOfMassPoint(j, (impulse * info.normalWorld) / mass);
 
 		body_a.angular_momentum += cross(x_a, impulse * info.normalWorld);
-		//body_b.angular_momentum -= cross(x_b, impulse * info.normalWorld);
 	}
 	
 }
@@ -209,21 +198,21 @@ void RigidBodySystemSimulator::onClick(int x, int y)
 {
 	this->m_massSpringSystem.onClick(x, y);
 
-	if (this->m_iTestCase != 1)
-		return;
 	//use jedi powers
 	//apply force to all bodies in the direction of the camera
 	Vec3 eyePoint = Vec3(DUC->g_camera.GetEyePt());
-
 	for (int i = 0;i < bodies.size();i++)
 	{
 		RigidBody& body = bodies[i];
 		Vec3 center = body.center_of_mass;
 		Vec3 force = (center - eyePoint);
 		double size = sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
+		double current_force_size = sqrt(body.linear_velocity.x * body.linear_velocity.x + body.linear_velocity.y * body.linear_velocity.y + body.linear_velocity.z * body.linear_velocity.z);
 		force /= size;
+		force *= max(1.0, current_force_size);
 		Vec3 loc = center + force * 0.5;
 		applyForceOnBody(i, loc, force);
+		printf("force: %f %f %f\n", force.x, force.y, force.z);
 	}
 }
 
