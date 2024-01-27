@@ -142,7 +142,9 @@ void RigidBodySystemSimulator::handleCollisionAmongBodies()
 			body_b.angular_momentum -= cross(x_b, impulse * info.normalWorld);
 		}
 
-		if (body_a.center_of_mass.y > -1)
+		if (body_a.center_of_mass.y > -1 && body_a.center_of_mass.y < 3 
+			&& body_a.center_of_mass.x < 3 && body_a.center_of_mass.x > -3
+			&& body_a.center_of_mass.z < 3 && body_a.center_of_mass.z > -3)
 			continue;
 
 		body_a.linear_velocity = -body_a.linear_velocity;
@@ -210,13 +212,18 @@ void RigidBodySystemSimulator::onSpace()
 		//force *= max(1.0, current_force_size);
 		Vec3 loc = center + force * 0.5;
 		applyForceOnBody(i, loc, force);
-		printf("force: %f %f %f\n", force.x, force.y, force.z);
 	}
 }
 
 void RigidBodySystemSimulator::onClick(int x, int y)
 {
 	onMouse(x, y);
+
+	for (int i = 0; i < bodies.size(); i++)
+	{
+		RigidBody& body = bodies[i];
+		setVelocityOf(i, Vec3());
+	}
 }
 
 void RigidBodySystemSimulator::onMouse(int x, int y)
