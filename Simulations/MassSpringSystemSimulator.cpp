@@ -171,6 +171,10 @@ void MassSpringSystemSimulator::simulateTimestep(float time_step)
 	this->stepRK4(time_step);
 }
 
+void MassSpringSystemSimulator::onSpace()
+{
+}
+
 void MassSpringSystemSimulator::onClick(int x, int y)
 {
 	if (m_trackmouse.x != 0 || m_trackmouse.y != 0)

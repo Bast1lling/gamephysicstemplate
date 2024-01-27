@@ -194,10 +194,8 @@ void RigidBodySystemSimulator::handleCollisionWithMSS(RigidBody& body_a)
 	
 }
 
-void RigidBodySystemSimulator::onClick(int x, int y)
+void RigidBodySystemSimulator::onSpace()
 {
-	this->m_massSpringSystem.onClick(x, y);
-
 	//use jedi powers
 	//apply force to all bodies in the direction of the camera
 	Vec3 eyePoint = Vec3(DUC->g_camera.GetEyePt());
@@ -209,11 +207,16 @@ void RigidBodySystemSimulator::onClick(int x, int y)
 		double size = sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
 		double current_force_size = sqrt(body.linear_velocity.x * body.linear_velocity.x + body.linear_velocity.y * body.linear_velocity.y + body.linear_velocity.z * body.linear_velocity.z);
 		force /= size;
-		force *= max(1.0, current_force_size);
+		//force *= max(1.0, current_force_size);
 		Vec3 loc = center + force * 0.5;
 		applyForceOnBody(i, loc, force);
 		printf("force: %f %f %f\n", force.x, force.y, force.z);
 	}
+}
+
+void RigidBodySystemSimulator::onClick(int x, int y)
+{
+	onMouse(x, y);
 }
 
 void RigidBodySystemSimulator::onMouse(int x, int y)

@@ -65,6 +65,7 @@ public:
 	void notifyCaseChanged(int testCase);
 	void externalForcesCalculations(float timeElapsed);
 	void simulateTimestep(float time_step);
+	void onSpace();
 	void onClick(int x, int y);
 	void onMouse(int x, int y);
 

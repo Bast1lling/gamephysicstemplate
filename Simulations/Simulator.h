@@ -63,6 +63,8 @@ public:
 	input x,y: the click position in pixels
 	*/
 	virtual void onClick(int x, int y) = 0;
+	
+	virtual void onSpace() = 0;
 
 	/*
 	this function is used to receive the input from the mouse

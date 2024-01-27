@@ -24,6 +24,7 @@ public:
 	void externalForcesCalculations(float timeElapsed);
 	void simulateTimestep(float timeStep);
 	void onClick(int x, int y);
+	void onSpace();
 	void onMouse(int x, int y);
 
 	// ExtraFunctions
