@@ -2,6 +2,8 @@
 
 void RigidBody::add_force(Vec3 force, Vec3 world_location)
 {
+	
+
 	Mat4 translation_matrix;
 	translation_matrix.initTranslation(-this->center_of_mass.x, -this->center_of_mass.y, -this->center_of_mass.z);
 
@@ -9,6 +11,7 @@ void RigidBody::add_force(Vec3 force, Vec3 world_location)
 	Vec3 temp_loc = translation_matrix.transformVector(world_location);
 	Vec3 temp_force = force;
 	this->torque += cross(temp_loc, temp_force);
+	
 }
 
 std::vector<Vec3> RigidBody::get_world_points()
@@ -23,7 +26,7 @@ std::vector<Vec3> RigidBody::get_world_points()
 	return world_points;
 }
 
-RigidBody RigidBody::makeQuad(Vec3 position, Vec3 size, int mass)
+RigidBody RigidBody::makeQuad(Vec3 position, Vec3 size, int mass, bool canCollide)
 {
 	RigidBody body;
 
@@ -41,6 +44,8 @@ RigidBody RigidBody::makeQuad(Vec3 position, Vec3 size, int mass)
 		Vec3( x, -y, -z),
 		Vec3(-x, -y, -z)
 	};
+	
+	body.canCollide = canCollide;
 
 	body.scale_matrix.initScaling(size.x, size.y, size.z);
 	body.center_of_mass = position;

@@ -109,10 +109,11 @@ void MassSpringSystemSimulator::initSystem()
 	this->m_fStiffness = 500;
 	this->m_fMass = 10;
 	this->gravity = -9.81;
-	const Vec3 start = Vec3(-0.5, 1.5, 0);
+	// const Vec3 start = Vec3(-0.5, 1.5, 0);
+	const Vec3 start = Vec3(-0.9, 1.5, 0);
 
-	const float horizontalSize = 1;
-	const float verticalSize = 2;
+	const float horizontalSize = 2.2;
+	const float verticalSize = 1.5;
 
 	Vec3 horizontalStep = Vec3(horizontalSize / this->numHorizontalPoints, 0, 0);
 	Vec3 verticalStep = -Vec3(0, 0, verticalSize / this->numVerticalPoints);

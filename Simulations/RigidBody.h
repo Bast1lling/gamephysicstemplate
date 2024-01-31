@@ -13,13 +13,14 @@ public:
 	Vec3 angular_momentum;
 	Quat orientation;
 	float mass;
+	bool canCollide;
 
 	void add_force(Vec3 force, Vec3 world_location);
 	std::vector<Vec3> get_world_points();
 
 	void do_step(float h);
 
-	static RigidBody makeQuad(Vec3 position, Vec3 size, int mass);
+	static RigidBody makeQuad(Vec3 position, Vec3 size, int mass, bool canCollide);
 	Mat4 getBodyToWorld();
 	Mat4 getWorldToBody();
 
