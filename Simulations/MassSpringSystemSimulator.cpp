@@ -41,25 +41,10 @@ void MassSpringSystemSimulator::initUI(DrawingUtilitiesClass* DUC)
 		}
 	};
 	const TwType integratorsType = TwDefineEnum("Integrators", integrators, 5);
-
-	switch (m_iTestCase)
-	{
-	case 1:
-	case 2: // Demos that use a fixed time step
-		TwAddVarRO(DUC->g_pTweakBar, "Fixed Time Step", TW_TYPE_FLOAT, &this->timestep_override, nullptr);
-		TwAddVarRO(DUC->g_pTweakBar, "Integrator", integratorsType, &this->m_iIntegrator, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "damping factor", TW_TYPE_FLOAT, &this->m_fDamping, nullptr);
-		break;
-	case 3: // Demos that can have their time step and integrator changed
-		TwAddVarRW(DUC->g_pTweakBar, "Integrator", integratorsType, &this->m_iIntegrator, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "horizontal points", TW_TYPE_UINT16, &this->numHorizontalPoints, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "vertical points", TW_TYPE_UINT16, &this->numVerticalPoints, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "gravity", TW_TYPE_FLOAT, &this->gravity, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "damping factor", TW_TYPE_FLOAT, &this->m_fDamping, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "stiffness", TW_TYPE_FLOAT, &this->m_fStiffness, nullptr);
-		TwAddVarRW(DUC->g_pTweakBar, "mass", TW_TYPE_FLOAT, &this->m_fMass, nullptr);
-		break;
-	}
+	TwAddVarRO(DUC->g_pTweakBar, "Integrator", integratorsType, &this->m_iIntegrator, nullptr);
+	TwAddVarRW(DUC->g_pTweakBar, "damping factor", TW_TYPE_FLOAT, &this->m_fDamping, nullptr);
+	TwAddVarRW(DUC->g_pTweakBar, "stiffness", TW_TYPE_FLOAT, &this->m_fStiffness, nullptr);
+	TwAddVarRW(DUC->g_pTweakBar, "mass", TW_TYPE_FLOAT, &this->m_fMass, nullptr);
 }
 
 void MassSpringSystemSimulator::reset()
@@ -67,7 +52,7 @@ void MassSpringSystemSimulator::reset()
 	this->mass_points.clear();
 	this->springs.clear();
 	this->movablePoints.clear();
-	this->m_iIntegrator = 4;
+	this->m_iIntegrator = rk4;
 }
 
 void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
@@ -105,24 +90,24 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 
 void MassSpringSystemSimulator::initSystem()
 {
-	this->m_fDamping = 1;
-	this->m_fStiffness = 500;
-	this->m_fMass = 10;
-	this->gravity = -9.81;
+	this->m_fDamping = 0.05;
+	this->m_fStiffness = 0.01;
+	this->m_fMass = 0.1;
+	this->gravity = 0;
 	// const Vec3 start = Vec3(-0.5, 1.5, 0);
-	const Vec3 start = Vec3(-0.9, 1.5, 0);
+	const Vec3 start = Vec3(-1, 1.6, 0);
 
-	const float horizontalSize = 2.2;
-	const float verticalSize = 1.5;
+	const float horizontalSize = 2.2225;
+	const float verticalSize = 1.67;
 
 	Vec3 horizontalStep = Vec3(horizontalSize / this->numHorizontalPoints, 0, 0);
-	Vec3 verticalStep = -Vec3(0, 0, verticalSize / this->numVerticalPoints);
+	Vec3 verticalStep = -Vec3(0, verticalSize / this->numVerticalPoints, 0);
 
 	for (int i = 0; i < this->numHorizontalPoints;i++)
 	{
 		for (int j = 0;j < this->numVerticalPoints;j++)
 		{
-			int thisIndex = this->addMassPoint(start + horizontalStep * i + verticalStep * j, Vec3(0, 0, 0), j == 0);
+			int thisIndex = this->addMassPoint(start + horizontalStep * i + verticalStep * j, Vec3(0, 0, 0), j == 0 || i == 0 || j == this->numVerticalPoints - 1 || i == this->numHorizontalPoints - 1);
 
 			if (j == 0)
 			{
@@ -163,7 +148,6 @@ void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
 
 void MassSpringSystemSimulator::simulateTimestep(float time_step)
 {
-	time_step *= 0.1f;
 	//if (this->m_iTestCase == 1 || this->m_iTestCase == 2)
 	//{
 	//	time_step = this->timestep_override;
@@ -178,28 +162,6 @@ void MassSpringSystemSimulator::onSpace()
 
 void MassSpringSystemSimulator::onClick(int x, int y)
 {
-	if (m_trackmouse.x != 0 || m_trackmouse.y != 0)
-	{
-		// Apply the mouse deltas to g_vfMovableObjectPos (move along cameras view plane)
-		Point2D mouseDiff;
-		mouseDiff.x = x - m_trackmouse.x;
-		mouseDiff.y = y - m_trackmouse.y;
-		if (mouseDiff.x != 0 || mouseDiff.y != 0)
-		{
-			Mat4 worldViewInv = Mat4(DUC->g_camera.GetWorldMatrix() * DUC->g_camera.GetViewMatrix());
-			worldViewInv = worldViewInv.inverse();
-			Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
-			Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
-			// find a proper scale!
-			float inputScale = 0.001f;
-			inputWorld = inputWorld * inputScale;
-			for (int index : this->movablePoints)
-			{
-				this->mass_points[index].position += inputWorld;
-			}
-		}
-	}
-
 	m_trackmouse.x = x;
 	m_trackmouse.y = y;
 }
@@ -277,9 +239,7 @@ void MassSpringSystemSimulator::setVelocityOfMassPoint(int index, Vec3 v)
 Mat4 MassSpringSystemSimulator::getMassPointToWorld(int index)
 {
 	Mat4 translation_matrix;
-	Mat4 scale_matrix;
 	Vec3 position = this->mass_points.at(index).position;
-	Vec3 size = this->mass_points.size() > 10 ? Vec3(0.1) : Vec3(0.1);
 	translation_matrix.initTranslation(position.x, position.y, position.z);
 
 	return this->m_sphereScale * translation_matrix;
@@ -467,6 +427,11 @@ void MassSpringSystemSimulator::stepRK4(float time_step)
 
 		// Reset accumulated force per frame
 		p.force = Vec3(0.f, this->gravity, 0.f);
+
+		// For points where the position was clamped, also clamp y velocity to 0
+		if (p.position.Y == 0) {
+			p.velocity = Vec3(p.velocity.X, max(p.velocity.Y, 0.), p.velocity.Z);
+		}
 	}
 }
 

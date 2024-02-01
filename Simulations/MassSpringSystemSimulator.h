@@ -57,6 +57,12 @@ public:
 	// Construtors
 	MassSpringSystemSimulator();
 
+	MassSpringSystemSimulator(MassSpringSystemSimulator& other) = delete; // delete the copy-constructor
+	MassSpringSystemSimulator(MassSpringSystemSimulator&& other) = delete; // delete the move-constructor
+	MassSpringSystemSimulator operator=(MassSpringSystemSimulator& other) = delete; // delete the copy-assignment operator
+	MassSpringSystemSimulator operator=(MassSpringSystemSimulator&& other) = delete; // delete the move-assignment operator
+	virtual ~MassSpringSystemSimulator() = default;
+
 	// UI Functions
 	const char* getTestCasesStr();
 	void initUI(DrawingUtilitiesClass* DUC);

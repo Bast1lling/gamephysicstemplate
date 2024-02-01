@@ -10,10 +10,12 @@
 
 #define TESTCASEUSEDTORUNTEST 2
 
-class RigidBodySystemSimulator:public Simulator{
+class RigidBodySystemSimulator : public Simulator {
 public:
 	// Construtors
 	RigidBodySystemSimulator();
+
+	virtual ~RigidBodySystemSimulator() = default;
 	
 	// Functions
 	const char * getTestCasesStr();
@@ -52,5 +54,5 @@ private:
 	Point2D m_oldtrackmouse;
 
 	std::vector<RigidBody> bodies;
-	};
+};
 #endif

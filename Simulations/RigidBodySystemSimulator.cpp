@@ -5,7 +5,7 @@
 RigidBodySystemSimulator::RigidBodySystemSimulator()
 {
 	this->m_iTestCase = 0;
-	this->m_massSpringSystem = MassSpringSystemSimulator();
+	this->m_massSpringSystem;
 	//notifyCaseChanged(this->m_iTestCase);
 }
 
@@ -30,6 +30,11 @@ void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateConte
 	this->m_massSpringSystem.drawFrame(pd3dImmediateContext);
 
 	DUC->setUpLighting(Vec3(), 0.4 * Vec3(1), 2000.0, Vec3(0.5));
+
+	for (int index = 0; index < this->m_massSpringSystem.mass_points.size(); index++)
+	{
+		DUC->drawRigidBody(this->m_massSpringSystem.getMassPointToWorld(index));
+	}
 
 	for (RigidBody& body : bodies)
 	{
@@ -67,12 +72,13 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 
 	case 2:
 	{
-		//goal
-		addRigidBody(Vec3(-1, 0.75, 0), Vec3(0.1, 1.5, 0.1), 10000, false);
-		addRigidBody(Vec3(1, 0.75, 0), Vec3(0.1, 1.5, 0.1), 10000, false);
-		addRigidBody(Vec3(0, 1.5, 0), Vec3(2.1, 0.1, 0.1), 10000, false);
+		// goal
+		addRigidBody(Vec3(-1, 0.85, 0), Vec3(0.1, 1.6, 0.1), 10000, false);
+		addRigidBody(Vec3(1, 0.85, 0), Vec3(0.1, 1.6, 0.1), 10000, false);
+		addRigidBody(Vec3(0, 1.6, 0), Vec3(2.1, 0.1, 0.1), 10000, false);
+		addRigidBody(Vec3(0., 0.1, 0.), Vec3(2.1, 0.1, 0.1), 10000, false);
 
-
+		// "ball"
 		addRigidBody(Vec3(0, 0.5, -2), Vec3(0.3, 0.3, 0.3), 2, true);
 	}
 	}
@@ -101,7 +107,6 @@ ostream& operator<<(ostream& os, const RigidBody& body)
 
 void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
-	timeStep *= 10;
 	this->m_massSpringSystem.simulateTimestep(timeStep);
 
 	for (RigidBody& body : bodies)
@@ -112,16 +117,21 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 	handleCollisionAmongBodies();
 }
 
-
 void RigidBodySystemSimulator::handleCollisionAmongBodies()
 {
 	for (int i = 0;i < bodies.size();i++)
 	{
 		RigidBody& body_a = bodies[i];
 		handleCollisionWithMSS(body_a);
+
 		for (int j = 0;j < bodies.size();j++)
 		{
+			if (i == j) // Stop hitting yourself
+				continue;
+
 			RigidBody& body_b = bodies[j];
+			if (!body_a.canCollide && !body_b.canCollide) // Neither of the bodies cares about collisions -> no need to check for one
+				continue; 
 
 			CollisionInfo info = checkCollisionSAT(body_a.getBodyToWorld(), body_b.getBodyToWorld());
 
@@ -155,14 +165,14 @@ void RigidBodySystemSimulator::handleCollisionAmongBodies()
 			
 			if (!body_a.canCollide) 
 			{
-				body_a.angular_momentum = (0, 0, 0);
-				body_a.linear_velocity = (0, 0, 0);
+				body_a.angular_momentum = Vec3(.0);
+				body_a.linear_velocity = Vec3(.0);
 			}
 
 			if (!body_b.canCollide) 
 			{
-				body_b.angular_momentum = (0, 0, 0);
-				body_b.linear_velocity = (0, 0, 0);
+				body_b.angular_momentum = Vec3(.0);
+				body_b.linear_velocity = Vec3(.0);
 			}
 			
 		}
@@ -173,17 +183,13 @@ void RigidBodySystemSimulator::handleCollisionAmongBodies()
 			continue;
 
 		body_a.linear_velocity = -body_a.linear_velocity;
-
-		
-
-	
 	}
 }
 
 void RigidBodySystemSimulator::handleCollisionWithMSS(RigidBody& body_a)
 {
 	if (body_a.canCollide) {
-		MassSpringSystemSimulator mss = this->m_massSpringSystem;
+		MassSpringSystemSimulator& mss = this->m_massSpringSystem;
 		for (int j = 0; j < mss.mass_points.size(); j++)
 		{
 			Mat4 mp_to_world = mss.getMassPointToWorld(j);
@@ -193,7 +199,6 @@ void RigidBodySystemSimulator::handleCollisionWithMSS(RigidBody& body_a)
 			if (!info.isValid) // Bodies are not colliding: do nothing
 				continue;
 
-			//printf("Collision between body %d and mass point %d\n", i, j);
 			Vec3 vel_a = body_a.getWorldVelocityAt(info.collisionPointWorld);
 			Vec3 vel_b = mss.getVelocityOfMassPoint(j);
 
@@ -203,23 +208,20 @@ void RigidBodySystemSimulator::handleCollisionWithMSS(RigidBody& body_a)
 
 			if (v_rel_dot_n > 0) // Bodies are already separating: do nothing
 				continue;
+
 			//W * p mit W = world space matrix, p = collision point
 			Vec3 x_a = body_a.getWorldToBody().transformVector(info.collisionPointWorld);
-			Vec3 x_b = mss.getMassPointToWorld(j).transformVector(info.collisionPointWorld);
 
 			Vec3 bodyAImpulse = body_a.calcImpulse(info.collisionPointWorld, info.normalWorld);
-
-			//mockup calcImpulse for mass points	
+			//mockup calcImpulse for mass points
 			Vec3 body_location = mp_to_world.transformVector(info.collisionPointWorld);
 			Vec3 bodyBImpulse = cross(cross(body_location, info.normalWorld), body_location);
 			float mass = mss.m_fMass;
 			float impulse = -v_rel_dot_n / (1 / body_a.mass + 1 / mass + dot(bodyAImpulse + bodyBImpulse, info.normalWorld));
 
-			//normalize impulse somehow
-			impulse /= mss.mass_points.size();
 
 			body_a.linear_velocity = body_a.linear_velocity + (info.normalWorld * impulse) / body_a.mass;
-			mss.setVelocityOfMassPoint(j, (impulse * info.normalWorld) / mass);
+			mss.setVelocityOfMassPoint(j, (-impulse * info.normalWorld) / mass);
 
 			body_a.angular_momentum += cross(x_a, impulse * info.normalWorld);
 		}
@@ -249,18 +251,10 @@ void RigidBodySystemSimulator::onSpace()
 void RigidBodySystemSimulator::onClick(int x, int y)
 {
 	onMouse(x, y);
-
-	for (int i = 0; i < bodies.size(); i++)
-	{
-		RigidBody& body = bodies[i];
-		setVelocityOf(i, Vec3());
-	}
 }
 
 void RigidBodySystemSimulator::onMouse(int x, int y)
 {
-	this->m_massSpringSystem.onMouse(x, y);
-
 	m_trackmouse.x = 0;
 	m_trackmouse.y = 0;
 }

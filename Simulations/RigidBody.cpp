@@ -2,8 +2,6 @@
 
 void RigidBody::add_force(Vec3 force, Vec3 world_location)
 {
-	
-
 	Mat4 translation_matrix;
 	translation_matrix.initTranslation(-this->center_of_mass.x, -this->center_of_mass.y, -this->center_of_mass.z);
 
